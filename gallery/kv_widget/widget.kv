@@ -1,0 +1,1241 @@
+#:import MDDropdownMenu kivymd.uix.menu.MDDropdownMenu
+#:import MDBoxLayout kivymd.uix.boxlayout.MDBoxLayout
+#:import MDLabel kivymd.uix.label.MDLabel
+<OtherSalesCard@BaseSalesCard>
+    elevation: 0 if app.theme_cls.theme_style == "Light" else 1
+
+<AccoCard@BaseSalesCard>
+    ripple_behavior: True
+
+<SalesCard@BaseSalesCard>
+    imagePath: ""
+    source: self.imagePath
+    on_release:
+        self.parent.root.root.manager.prev_screen.append(self.parent.root.root.name)
+        self.parent.root.root.manager.current = "lookout"
+        self.parent.root.root.manager.ids.lookout.ids.product_name.text = self.product
+        #self.parent.root.root.manager.ids.lookout.ids.store.text = self.store
+        self.parent.root.root.manager.ids.lookout.update_interface(self.data)
+
+<BaseSalesCard@MDCard>:
+    source: ""
+    text: ""
+    radius: [dp(6)]
+    product: ""
+    price: 0
+    text_radius: [dp(5)]
+    store: ""
+    #text_color: [1, 1, 1, 1]
+    orientation: "vertical"
+    data: {"product": self.product, "store": self.store}
+    RelativeLayout:
+        AsyncImage:
+            id: image
+            color: 0, 0, 0, 0
+            source: root.source
+            anim_delay: .1
+            allow_stretch: True
+            keep_ratio: False
+            on_source:
+                loader.opacity = 0
+                self.color = [1, 1, 1, 1]
+            canvas.before:
+                StencilPush
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [root.radius[0], root.radius[0], 0, 0]
+                StencilUse
+
+            canvas.after:
+                StencilUnUse
+                RoundedRectangle:
+                    size: self.size
+                    pos: self.pos
+                    radius: [root.radius[0], root.radius[0], 0, 0]
+                StencilPop
+        M_AKImageLoader:
+            id: loader
+            radius: [root.radius[0], root.radius[0], 0, 0]
+            circle: False
+    MDBoxLayout
+        adaptive_height: True
+        padding: dp(10)
+        M_AKLabelLoader:
+            text:
+                "" if not ((root.price and root.product) or root.text) else\
+                f"{root.product}\n[b][color={get_hex_from_color(app.theme_cls.primary_color)}]₦{float(root.price) + 5/100 * float(root.price):,}[/color][/b]" \
+                if root.price and root.product else\
+                root.text
+            radius: root.text_radius
+            size_hint_y: None
+            markup: True
+            theme_text_color: "Custom"
+            text_color: app.theme_cls.text_color
+            height: dp(20) if not self.text else self.texture_size[1]
+            font_size: dp(17)
+            #font_style: "Money"
+            halign:"left"
+            pos_hint:{"center_y": .5}
+
+<FeedsCard@MDCard>:
+    #elevation: 0 if app.theme_cls.theme_style == "Light" else 1
+    image_url: ""
+    radius: [dp(6)]
+    store: ""
+    name: ""
+    price: ""
+    text_radius: [dp(5)]
+    phone: ""
+    url: ""
+    orientation: "vertical"
+    rates: rates
+    data: {"product": self.name, "store": self.store}
+    ripple_color: app.theme_cls.primary_color
+    ripple_behavior: True
+    on_release: root.parent.root.proceed_to_lookout(self)
+    RelativeLayout:
+        AsyncImage:
+            id: image
+            source: root.image_url
+            anim_delay: .1
+            allow_stretch: True
+            keep_ratio: False #if app.image_has_transparency(self, self.source) else False
+            nocache: True
+            on_load:
+                loader.opacity = 0
+            canvas.before:
+                StencilPush
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [root.radius[0], root.radius[0], 0, 0]
+                StencilUse
+
+            canvas.after:
+                StencilUnUse
+                RoundedRectangle:
+                    size: self.size
+                    pos: self.pos
+                    radius: [root.radius[0], root.radius[0], 0, 0]
+                StencilPop
+        M_AKImageLoader:
+            id: loader
+            radius: [root.radius[0], root.radius[0], 0, 0]
+            circle: False
+#            source: "https://image.shutterstock.com/image-photo/view-lagos-lagoon-victoria-island-260nw-1066980758.jpg"
+#            on_load:
+#                print("yaa")
+        MDBoxLayout:
+            id:box
+            padding: dp(10)
+            adaptive_height: True
+            md_bg_color: 0, 0, 0, .6
+            radius: [0, 0, 0, 0]
+            M_AKLabelLoader:
+                text: "" if not root.store else f"Store: NocenStore"
+                radius: root.text_radius
+                size_hint_y: None
+                theme_text_color: "Custom"
+                text_color: 1, 1, 1, 1
+                height: dp(20) if not self.text else self.texture_size[1]
+                font_style: "Money"
+                font_size: dp(16)
+                halign:"left"
+            AKRating:
+                id: rates
+                animation_type: 'grow'
+                normal_color: 1,1,1,.8
+                active_color: app.theme_cls.primary_color
+                _selected: 3
+                icon_size: dp(20)
+                disabled: True
+                pos_hint: {"center_x": .5}
+    MDBoxLayout
+        adaptive_height: True
+        padding: dp(10)
+        M_AKLabelLoader:
+            text:
+                "" if not root.price and not root.name else \
+                f"{root.name}\n[b][color={get_hex_from_color(app.theme_cls.primary_color)}]₦{float(root.price if root.price else 0) + 5/100 * float(root.price if root.price else 0):,}[/color][/b]"
+            radius: root.text_radius
+            size_hint_y: None
+            markup: True
+            theme_text_color: "Custom"
+            text_color: app.theme_cls.text_color
+            height: dp(20) if not self.text else self.texture_size[1]
+            font_size: dp(17)
+            halign:"left"
+            pos_hint:{"center_y": .5}
+
+
+<UserActivity@MDGridLayout>:
+    cols: 1
+    #spacing: dp(5)
+    adaptive_height: True
+    text: ["", ""]
+    icon: ""
+    icon_color: get_color_from_hex("#2196F3")
+    customer: total
+    MDIcon:
+        icon: root.icon
+        disabled: True
+        halign: "center"
+        color: root.icon_color
+        size_hint_y: None
+        height: self.texture_size[1]
+        font_size: dp(17)
+    MDLabel:
+        text: root.text[0]
+        font_style: "Money"
+        disabled: True
+        halign: "center"
+        font_size: "12sp"
+        size_hint_y: None
+        height: self.texture_size[1]
+
+    MDLabel:
+        id: total
+        text: root.text[1]
+        disabled: True
+        font_style: "Money"
+        halign: "center"
+        size_hint_y: None
+        font_size: "15dp"
+        height: self.texture_size[1]
+
+<CategoryCard@MDCard>:
+    elevation: 0
+    source: ""
+    text: ""
+    radius: [dp(10)]
+    size_hint_y: None
+    height: self.minimum_height
+    product_name: ""
+    product_price: 0
+    text_radius: [dp(5)]
+    product_owner: ""
+    #text_color: [1, 1, 1, 1]
+    orientation: "vertical"
+    RelativeLayout:
+        size_hint_y: None
+        height: root.width
+        #height: Window.height/4
+        AsyncImage:
+            id: image
+            color: 0, 0, 0, 0
+            source: root.source
+            anim_delay: .1
+            allow_stretch: True
+            keep_ratio: False
+            nocache: True
+            on_load:
+                loader.opacity = 0
+                self.color = [1, 1, 1, 1]
+            canvas.before:
+                StencilPush
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [root.radius[0], root.radius[0], 0, 0]
+                StencilUse
+
+            canvas.after:
+                StencilUnUse
+                RoundedRectangle:
+                    size: self.size
+                    pos: self.pos
+                    radius: [root.radius[0], root.radius[0], 0, 0]
+                StencilPop
+        M_AKImageLoader:
+            id: loader
+            radius: [root.radius[0], root.radius[0], 0, 0]
+            circle: False
+    MDBoxLayout
+        adaptive_height: True
+        padding: dp(10)
+        orientation:"vertical"
+        MDLabel:
+            text: root.text
+            size_hint_y: None
+            height: self.texture_size[1]
+            font_style: "Money"
+            font_size: "11dp"
+            valign: "top"
+            halign: "center"
+#<PendingReviewCard@BaseReviewProductCard>
+#    on_release: root.parent.root.comment_dialog()
+
+
+<OrderCard@BaseReviewProductCard>
+    source: ""
+    imagePath: self.source
+
+    on_release:
+        None
+
+<CategoryProductCard@BaseProductCard>
+    size_hint_y: None
+    height: Window.height/4.5
+
+<BaseProductCard@MDCard>:
+    elevation: 0
+    imagePath: ""
+    store: ""
+    product: ""
+    price: "0"
+    check: ""
+    text_radius: [dp(5)]
+    rate: 4
+    radius: [dp(10)]
+    data: {"product": self.product, "store": self.store}
+    orientation: "vertical"
+    size_hint_y: None
+    height: Window.height/2.2
+    RelativeLayout:
+        AsyncImage:
+            id: image
+            color: 0, 0, 0, 0
+            source: root.imagePath
+            anim_delay: .1
+            keep_ratio: True
+            nocache: True
+            on_load:
+                loader.opacity = 0
+                self.color = [1, 1, 1, 1]
+            canvas.before:
+                StencilPush
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [root.radius[0], 0, 0, root.radius[0]]
+                StencilUse
+
+            canvas.after:
+                StencilUnUse
+                RoundedRectangle:
+                    size: self.size
+                    pos: self.pos
+                    radius: [root.radius[0], 0, 0, root.radius[0]]
+                StencilPop
+        M_AKImageLoader:
+            id: loader
+            radius: [root.radius[0], root.radius[0], 0, 0]
+            circle: False
+    MDBoxLayout:
+        orientation: "vertical"
+        padding: dp(10)
+        spacing: dp(5)
+        M_AKLabelLoader:
+            text:
+                "" if not (root.price and root.product) else \
+                f"[font=assets/Eczar-Regular.ttf]{root.product}[/font]\n[b][color={get_hex_from_color(app.theme_cls.primary_color)}]₦{float(root.price.replace(',', '')) + 5/100 * float(root.price.replace(',', '')):,}[/color][/b]" if \
+                not root.check else f"[font=assets/Eczar-Regular.ttf]{root.product}[/font]\n[b][color={get_hex_from_color(app.theme_cls.primary_color)}]{root.price}[/color][/b]"
+            radius: root.text_radius
+            size_hint_y: None
+            markup: True
+            height: dp(20) if not self.text else self.texture_size[1]
+
+        AKRating:
+            id: rates
+            normal_icon: 'star-box-outline'
+            active_icon: 'star-box'
+            animation_type: 'grow'
+            normal_color: app.theme_cls.disabled_hint_text_color
+            active_color: app.theme_cls.primary_color
+            icon_size: dp(20)
+            disabled: True
+            _selected: root.rate
+        MDLabel:
+            text: f"[color=388E3C]store:[/color] NocenStore"
+            #color: get_color_from_hex("388E3C")
+            font_style: "Money"
+            markup: True
+
+        MDBoxLayout:
+            orientation: "vertical"
+            adaptive_height: True
+            radius: [dp(5)]
+            padding:[dp(5), 0, dp(5), 0]
+            MDCard:
+                size_hint_y: None
+                height: self.minimum_height
+                md_bg_color: app.theme_cls.primary_color
+                padding: dp(10)
+                radius: [dp(5)]
+                on_release:
+                    root.parent.root.prev_screen.append(root.parent.roots.name)
+                    root.parent.root.current = "lookout"
+                    root.parent.root.ids.lookout.ids.product_name.text = root.product
+                    #self.parent.root.ids.lookout.ids.store.text = self.store
+                    root.parent.root.ids.lookout.update_interface(root.data)
+
+                MDLabel:
+                    text: "View Product"
+                    font_style: "Button"
+                    size_hint_y: None
+                    height: self.texture_size[1]
+                    halign: "center"
+                    theme_text_color: "Custom"
+                    text_color: 1,1,1,1
+<BaseReviewProductCard@MDCard>:
+    ripple_behavior: True
+    imagePath: ""
+    store: ""
+    product: ""
+    price: "0"
+    check: ""
+    text_radius: [dp(5)]
+    rate: 4
+    radius: [dp(10)]
+    data: {"product": self.product, "store": self.store}
+    RelativeLayout:
+        size_hint_x: .7
+        size_hint_y: None
+        height: Window.height/4.5
+        AsyncImage:
+            id: image
+            color: 0, 0, 0, 0
+            source: root.imagePath
+            anim_delay: .1
+            keep_ratio: False
+            nocache: True
+            on_load:
+                loader.opacity = 0
+                self.color = [1, 1, 1, 1]
+            canvas.before:
+                StencilPush
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [root.radius[0], 0, 0, root.radius[0]]
+                StencilUse
+
+            canvas.after:
+                StencilUnUse
+                RoundedRectangle:
+                    size: self.size
+                    pos: self.pos
+                    radius: [root.radius[0], 0, 0, root.radius[0]]
+                StencilPop
+        M_AKImageLoader:
+            id: loader
+            radius: [root.radius[0], root.radius[0], 0, 0]
+            circle: False
+    MDBoxLayout:
+        orientation: "vertical"
+        padding: dp(10)
+        spacing: dp(5)
+        M_AKLabelLoader:
+            text:
+                "" if not (root.price and root.product) else \
+                f"[font=assets/Eczar-Regular.ttf]{root.product}[/font]\n[b][color={get_hex_from_color(app.theme_cls.primary_color)}]₦{float(root.price.replace(',', '')) + 5/100 * float(root.price.replace(',', '')):,}[/color][/b]" if \
+                not root.check else f"[font=assets/Eczar-Regular.ttf]{root.product}[/font]\n[b][color={get_hex_from_color(app.theme_cls.primary_color)}]{root.price}[/color][/b]"
+            radius: root.text_radius
+            size_hint_y: None
+            markup: True
+            height: dp(20) if not self.text else self.texture_size[1]
+
+        AKRating:
+            id: rates
+            normal_icon: 'star-box-outline'
+            active_icon: 'star-box'
+            animation_type: 'grow'
+            normal_color: app.theme_cls.disabled_hint_text_color
+            active_color: app.theme_cls.primary_color
+            icon_size: dp(20)
+            disabled: True
+            _selected: root.rate
+        MDLabel:
+            text: f"[color=388E3C]store:[/color] NocenStore"
+            #color: get_color_from_hex("388E3C")
+            font_style: "Money"
+            markup: True
+
+        MDBoxLayout:
+            adaptive_height: True
+            size_hint_x: None
+            width: self.parent.width/2
+            md_bg_color: 0,1,0,.1
+            radius: [dp(5)]
+            MDLabel:
+                id: la
+                text: "NOCENSTORE" if not root.check else root.check
+                font_style: "Money"
+                italic: True
+                color: app.theme_cls.primary_color
+                size_hint_y: None
+                height: self.texture_size[1]
+                halign: "center"
+                font_size: dp(13)
+
+
+
+
+
+<CardIconButton@MDCard>:
+    #icon_width: None
+    size_hint_y: None
+    height: self.minimum_height
+    text: ""
+    icon: ""
+    icon_color: 0, 0, 0, 1
+    text_color: 0, 0, 0, 1
+    font_style: "Caption"
+    label_halign: "center"
+    ripple_behavior: True
+    radius: [dp(5)]
+    MDIconButton:
+        id: icon
+        icon: root.icon
+        theme_text_color: "Custom"
+        text_color: root.icon_color
+        #size_hint_x: None
+        #width: self.texture_size[0] if not root.icon_width else root.icon_width
+
+    MDLabel:
+        halign: root.label_halign
+        text: root.text
+        color: root.text_color
+        size_hint_y: None
+        font_style: root.font_style
+        height: self.texture_size[1]
+        pos_hint:{"center_y": .5}
+
+<ProductCard@MDCard>
+    background: ""
+    radius: [dp(10)]
+    source: ""
+    text: self.source
+    RelativeLayout:
+        MDIcon:
+            id: ico
+            icon: "image-plus"
+            halign: "center"
+            font_size: dp(50)
+            color: app.theme_cls.disabled_hint_text_color
+        FitImage:
+            source: root.source
+            radius: root.radius
+
+<PictureCard@MDCard>:
+    spacing: dp(10)
+    source:""
+    text: ""
+    Image:
+        source: root.source
+        allow_stretch: True
+        keep_ratio: False
+        size_hint_x: .5
+    MDLabel:
+        text: root.text
+
+<PlatformCan@MDBoxLayout>
+    orientation: "vertical"
+    adaptive_height: True
+    icon: ""
+    text: ""
+    item: ""
+    bg_color: [0,0,0,0]
+    MDIconButton:
+        icon: root.icon
+        theme_text_color: "Custom"
+        text_color: 1,1,1,1
+        md_bg_color: root.bg_color
+        pos_hint: {"center_x": .5}
+        on_release:
+            root.root.manager.on_next_screen(root.root.name)
+            root.root.manager.current = root.item.lower()
+
+    MDLabel:
+        halign: "center"
+        size_hint_y: None
+        text: root.text
+        font_style: "Caption"
+        height: self.texture_size[1]
+
+<AccoLocation@MDBoxLayout>
+    orientation: "vertical"
+    size_hint_y: None
+    text: ""
+    height: rb.height + box.height + dp(5)
+    MDBoxLayout:
+        id: box
+        adaptive_height: True
+        padding: dp(10)
+        MDLabel:
+            size_hint_y: None
+            height: self.texture_size[1]
+            text: root.text
+            font_style: "BigMoney"
+    RecycleView:
+        id: rv
+        root: root
+        effect_cls: ScrollEffect #_ScrollViewHardStop
+        #do_scroll_y: False
+        viewclass: "AccoCard"
+        bar_width: 0
+        RecycleBoxLayout:
+            id: rb
+            default_size_hint: None, None
+            default_size: root.width/2.2 - dp(10), Window.height/3
+            size_hint: None, None
+            size: self.minimum_width ,self.minimum_height
+            spacing:dp(10)
+            orientation: "horizontal"
+            padding: dp(5)
+            canvas:
+                Color:
+                    rgba: [1,1,1,1] if app.theme_cls.theme_style == "Light" else get_color_from_hex("1f1f1f")
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+
+<NotifyCard@MDCard>:
+    size_hint_y: None
+    height: Window.height/6
+    ripple_behavior: True
+    ripple_color: app.theme_cls.primary_color
+    text: ""
+    radius: [dp(20)]
+    MDBoxLayout:
+        size_hint: .5, None
+        height: Window.height/6
+        md_bg_color: app.theme_cls.primary_color
+        radius: [dp(20), 0, 0, dp(20)]
+        MDIcon:
+            icon: "bell"
+            color: 1,1,1,1
+            font_size: dp(50)
+            halign: "center"
+    MDBoxLayout:
+        size_hint_y: None
+        height: Window.height/6
+        padding: [dp(10), dp(20), dp(10), dp(20)]
+        MDLabel:
+            text: root.text
+            #size_hint_y: None
+            #height: self.texture_size[1]
+            font_style: "Money"
+            #halign: "center"
+            valign: "top"
+            text_size: self.size
+
+<CommentField>
+    size_hint_y: None
+    height: "120dp"
+    M_CardTextField:
+        grow_card: True
+        elevation: 1
+        hint_text: "comment"
+        foreground_color: app.theme_cls.text_color
+        icon_right: "send"
+        icon_right_color: app.theme_cls.primary_color
+        icon_right_callback: root.root.send_comment
+        cursor_color: app.theme_cls.text_color
+        md_bg_color: [1,1,1,1] if app.theme_cls.theme_style == "Light" else get_color_from_hex("1f1f1f")
+        background_color: [1,1,1,1] if app.theme_cls.theme_style == "Light" else get_color_from_hex("1f1f1f")
+
+<DealsCard@MDCard>:
+    orientation: "vertical"
+    elevation: 0
+    image_url:""
+    source: self.image_url
+    radius: [dp(10)]
+    text_radius: [dp(5)]
+    name: ""
+    store: ""
+    price: ""
+    ripple_behavior: True
+    data: {"product": self.name, "store": self.store}
+    on_release:
+        self.parent.root.prev_screen.append(self.parent.roots.name)
+        self.parent.root.current = "lookout"
+        self.parent.root.ids.lookout.ids.product_name.text = self.name
+        #self.parent.root.ids.lookout.ids.store.text = self.store
+        self.parent.root.ids.lookout.update_interface(self.data)
+    RelativeLayout:
+        AsyncImage:
+            id: image
+            source: root.source
+            anim_delay: .1
+            allow_stretch: True
+            keep_ratio: False #if app.image_has_transparency(self, self.source) else False
+            nocache: True
+            on_load:
+                loader.opacity = 0
+            canvas.before:
+                StencilPush
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: root.radius
+                StencilUse
+
+            canvas.after:
+                StencilUnUse
+                RoundedRectangle:
+                    size: self.size
+                    pos: self.pos
+                    radius: root.radius
+                StencilPop
+        M_AKImageLoader:
+            id: loader
+            radius: root.radius
+            circle: False
+        MDBoxLayout:
+            id:box
+            padding: dp(10)
+            adaptive_height: True
+            md_bg_color: 0, 0, 0, .4
+            radius: [0, 0, root.radius[0], root.radius[0]]
+            M_AKLabelLoader:
+                text: "" if not root.price or not root.store or not root.name else f"Deal: {root.name}\n[color={get_hex_from_color(app.theme_cls.primary_color)}]₦{float(root.price) + 5/100 * float(root.price):,}[/color]\nstore: NocenStore"
+                radius: root.text_radius
+                size_hint_y: None
+                theme_text_color: "Custom"
+                text_color: 1, 1, 1, 1
+                height: dp(20) if not self.text else self.texture_size[1]
+                font_size: dp(16)
+                halign:"left"
+                markup: True
+
+<NewsCard@MDCard>:
+    orientation: "vertical"
+    size_hint_y: None
+    height: Window.height/1.5
+    padding: dp(10)
+    spacing: dp(10)
+    elevation: 0 if app.theme_cls.theme_style == "Light" else 1
+    radius: [dp(10)]
+    news: ""
+    image_url:""
+    news_app_url: ""
+    news_url:""
+    on_release:
+        root.parent.roots.open_web(self)
+    MDBoxLayout:
+        adaptive_height: True
+        spacing: dp(10)
+        Widget:
+            size_hint: None, None
+            size: dp(100), dp(100)
+            canvas.before:
+                Color:
+                    rgba: 1,1,1,1
+                Ellipse:
+                    size: self.size
+                    pos: self.pos
+                    source: "assets/logons1.png"
+        MDBoxLayout:
+            adaptive_height: True
+            size_hint_x: None
+            width: Window.width/3
+            md_bg_color: 0,1,0,.1
+            pos_hint:{"center_y": .5}
+            radius: [dp(5)]
+            MDLabel:
+                id: la
+                text: "NOCENSTORE"
+                font_style: "Money"
+                italic: True
+                color: app.theme_cls.primary_color
+                size_hint_y: None
+                height: self.texture_size[1]
+                halign: "center"
+    MDLabel:
+        text: root.news
+        size_hint_y: None
+        height: self.texture_size[1]
+
+    MDRelativeLayout:
+        M_FitImage:
+            id: image
+            source: root.image_url
+            radius: root.radius
+            load_callback: lambda x: exec("loader.opacity = 0")
+        M_AKImageLoader:
+            id: loader
+            radius: root.radius
+            circle: False
+
+<PlanItem>
+    adaptive_size: True
+    on_touch_down: if self.collide_point(*args[1].pos): root.press_on_plan(root)
+
+    MDBoxLayout:
+        size_hint: None, None
+        size: "40dp", "40dp"
+
+        canvas.before:
+            Color:
+                rgba: root.color_select
+            BorderImage
+                pos: self.pos
+                size: self.size
+                source: "assets/border.png"
+
+        Label:
+            text_size: self.size
+            halign: 'center'
+            valign: 'middle'
+            text: root.text_item
+            markup: True
+            color: 0, 0, 0, 1
+
+<CartCard@MDCard>:
+    orientation: "vertical"
+    size_hint_y: None
+    height: Window.height/4.3
+    radius: [dp(5)]
+    product: ""
+    source: ""
+    price: ""
+    store: ""
+    base_price:
+    count: 1
+    p_type: False
+    selected_size: ""
+    padding: [dp(5), 0, dp(5), 0]
+    MDBoxLayout:
+        adaptive_height: True
+        spacing: dp(5)
+        padding: [0, 0, 0, dp(5)]
+        AsyncImage:
+            source: root.source
+            nocache: True
+            size_hint: None, None
+            height: root.height - down.height - dp(5)
+            width: root.width/3
+        MDList:
+            spacing: dp(10)
+            padding: [0, 0, 0, dp(15)]
+            MDLabel:
+                text: root.product
+                size_hint_y: None
+                font_style: "H6"
+                height: self.texture_size[1]
+            MDLabel:
+                text: root.price
+                size_hint_y: None
+                height: self.texture_size[1]
+                color: app.theme_cls.primary_color
+
+            MDBoxLayout:
+                adaptive_height: True
+                size_hint_x: None
+                width: self.parent.width/2
+                md_bg_color: 0,1,0,.1
+                radius: [dp(5)]
+                MDLabel:
+                    id: la
+                    text: "NocenStore"
+                    font_style: "Money"
+                    color: app.theme_cls.primary_color
+                    size_hint_y: None
+                    height: self.texture_size[1]
+                    halign: "center"
+                    font_size: dp(17)
+    MDSeparator:
+    MDBoxLayout:
+        id: down
+        adaptive_height: True
+        spacing: root.width/3
+        MDBoxLayout
+            adaptive_height: True
+            MDIconButton:
+                icon: "delete"
+                on_release: root.parent.roots.remove_product(root)
+            MDTextButton:
+                text: "REMOVE"
+                pos_hint: {"center_y": .4}
+                on_release: root.parent.roots.remove_product(root)
+        MDBoxLayout
+            adaptive_height: True
+            MDIconButton:
+                icon: "minus-box"
+                disabled: True if root.p_type else False
+                on_release: root.parent.roots.minus_one(root)
+            MDTextField:
+                id: count
+                text: str(root.count)
+                input_type: "number"
+                input_filter: "int"
+                size_hint_x: None
+                width: dp(20)
+                disabled: True
+            MDIconButton:
+                icon: "plus-box"
+                disabled: True if root.p_type else False
+                on_release: root.parent.roots.add_more(root)
+
+<LeftIconToolBar@MDCard>:
+    size_hint_y: None
+    icon: ""
+    title: ""
+    height: self.minimum_height
+    callback: None
+    orientation: "vertical"
+    padding: [dp(10), 0, dp(10), 0]
+    md_bg_color: [1,1,1,1] if app.theme_cls.theme_style == "Light" else get_color_from_hex("1f1f1f")
+
+    MDBoxLayout:
+        size_hint: 1, None
+        height: app.theme_cls.standard_increment
+        spacing: dp(10)
+        MDIconButton:
+            icon: root.icon
+            pos_hint: {"center_y": .5}
+            on_release:
+                root.callback()
+
+        MDLabel:
+            text: root.title + f"[color={get_hex_from_color(app.theme_cls.primary_color)}]•[/color]"
+            color: [1,1,1,1] if app.theme_cls.theme_style == "Dark" else [0,0,0,.7]
+            markup: True
+            font_style:"BigMoney"
+            bold: True
+            pos_hint:{"center_y": .5}
+
+<DoubleIconToolBar@MDCard>:
+    icon_right: ""
+    icon_left: ""
+    title: ""
+    icon_right_color: app.theme_cls.text_color
+    icon_right_callback: None
+    icon_left_callback: None
+    size_hint_y: None
+    height: self.minimum_height
+    orientation: "vertical"
+    padding: [dp(10), 0, dp(10), 0]
+    md_bg_color: [1,1,1,1] if app.theme_cls.theme_style == "Light" else get_color_from_hex("1f1f1f")
+
+    MDBoxLayout:
+        size_hint: 1, None
+        height: app.theme_cls.standard_increment
+        spacing: dp(10)
+        MDIconButton:
+            icon: root.icon_left
+            pos_hint: {"center_y": .5}
+            on_release: root.icon_left_callback()
+
+        MDLabel:
+            text: root.title + f"[color={get_hex_from_color(app.theme_cls.primary_color)}]•[/color]"
+            color: [1,1,1,1] if app.theme_cls.theme_style == "Dark" else [0,0,0,.7]
+            markup: True
+            font_style:"BigMoney"
+            bold: True
+            pos_hint:{"center_y": .5}
+        MDIconButton:
+            icon: root.icon_right
+            pos_hint: {"center_y": .5}
+            theme_text_color: "Custom"
+            text_color: root.icon_right_color
+            on_release: root.icon_right_callback()
+
+<ProtoLabel@MDBoxLayout>:
+    adaptive_height: True
+    padding: dp(20)
+    left_text: ""
+    right_text: ""
+    MDLabel:
+        text: root.left_text
+        bold: True
+    MDLabel:
+        halign: "right"
+        text: root.right_text
+        bold: True
+        color: app.theme_cls.primary_color
+
+<TextField@M_CardTextField>:
+    grow: False
+    elevation: 10
+    hint_text: ""
+    icon_left: ""
+    icon_left_color: app.theme_cls.primary_color
+    foreground_color: [0, 0, 0, 0.8] if app.theme_cls.theme_style == "Light" else [1,1,1,1]
+    cursor_color: [0, 0, 0, .7] if app.theme_cls.theme_style == "Light" else [1,1,1,1]
+    md_bg_color: [1,1,1,1] if app.theme_cls.theme_style == "Light" else get_color_from_hex("1f1f1f")
+    background_color: [1,1,1,1] if app.theme_cls.theme_style == "Light" else get_color_from_hex("1f1f1f")
+    disabled_foreground_color: [0.5, 0.5, 0.5, 1.0]
+
+<Swiper@MDBoxLayout>:
+    swiper: swiper
+    adaptive_height: True
+    padding: [0, 0, 0, dp(10)]
+    root: None
+    on_root:
+        self.root.swiper = swiper
+    canvas.before:
+        Color:
+            rgba: app.theme_cls.primary_color
+        Rectangle:
+            size:self.size
+            pos: self.pos[0], self.pos[1] + dp(100)
+    MDSwiper:
+        id: swiper
+        size_hint_y: None
+        height: Window.height/4.5
+        items_spacing: "10dp"
+        m: int()
+        #effect_cls: ScrollEffect
+        on_scroll_start:
+            self.m = args[1].pos[0]
+            root.root.pause_clock()
+        on_scroll_stop:
+            self.swipe_left() if self.m < args[1].pos[0] else self.swipe_right()
+            root.root.resume_clock()
+        MDSwiperItem:
+            M_CardLoader:
+                source:""
+                text: ""
+                root: root.root
+
+        MDSwiperItem:
+            M_CardLoader
+                source: ""
+                text: ""
+                root: root.root
+
+        MDSwiperItem:
+            M_CardLoader
+                source: ""
+                text: ""
+                root: root.root
+
+        MDSwiperItem:
+            M_CardLoader
+                source: ""
+                text: ""
+                root: root.root
+
+        MDSwiperItem:
+            M_CardLoader
+                source: ""
+                text: ""
+                root: root.root
+
+<Platform@MDBoxLayout>:
+    root: None
+    adaptive_height: True
+    padding: dp(5)
+    MDCard:
+        size_hint_y: None
+        height: self.minimum_height
+        radius: [dp(10)]
+        MDGridLayout:
+            adaptive_height: True
+            cols: 4
+            padding: dp(10)
+            spacing: dp(10)
+            PlatformCan:
+                root: root.root
+                icon: "shopping"
+                text: "Today's\nDeals"
+                item: "Deals"
+                bg_color: .8, 0, 0, 1
+
+            PlatformCan:
+                root: root.root
+                icon: "headset"
+                bg_color: app.theme_cls.primary_color
+                text: "Customer\nCare"
+                item: "Customer Care"
+
+            PlatformCan:
+                root: root.root
+                icon: "heart"
+                text: "Saved\nItems"
+                item: "Saved Items"
+                bg_color: 1, .7, 0, 1
+
+            PlatformCan:
+                root: root.root
+                icon: "school"
+                text: "Student\nZone"
+                item: "Student Zone"
+                bg_color: 1, 0, .8, 1
+
+<Gridad@MDGridLayout>:
+    root: None
+    adaptive_height: True
+    cols: 3
+    padding: [dp(5), dp(10), dp(5), dp(5)]
+    spacing: dp(5)
+    CategoryCard:
+        text: "Electronics"
+        #text_color: 1, 1, 1, 1
+        source: "assets/electronics.png"
+        on_release:
+            root.root.change_screen(self, "category")
+
+    CategoryCard:
+        text: "Portable Devices"
+        source: "assets/portables.png"
+        on_release:
+            root.root.change_screen(self, "category")
+        #text_color: 1, 1, 1, 1
+
+    CategoryCard:
+        text: "Clothing"
+        source: "assets/clothing.png"
+        #text_color: 1, 1, 1, 1
+        on_release:
+            root.root.change_screen(self, "category")
+
+    CategoryCard:
+        text: "Furniture"
+        source: "assets/furniture.png"
+        #text_color: 1, 1, 1, 1
+        on_release:
+            root.root.change_screen(self, "category")
+
+    CategoryCard:
+        text: "Kitchen"
+        source: "assets/kitchen.png"
+        #text_color: 1, 1, 1, 1
+        on_release:
+            root.root.change_screen(self, "category")
+
+    CategoryCard:
+        text: "Beauty"
+        source: "assets/beauty.png"
+        on_release:
+            root.root.change_screen(self, "category")
+
+<Title@MDBoxLayout>:
+    adaptive_height: True
+    MDCard:
+        size_hint_y: None
+        height: self.minimum_height
+        padding: dp(10)
+        MDLabel:
+            text: "Upload Your Product Information"
+            size_hint_y: None
+            height: self.texture_size[1]
+            font_style:"Money"
+            font_size: dp(18)
+
+<PicArt@MDCard>:
+    root: None
+    orientation: "vertical"
+    size_hint_y: None
+    height: Window.height/2.5
+    radius: [dp(10)]
+    ScrollView:
+        effect_cls: ScrollEffect
+        do_scroll_y: False
+        MDBoxLayout:
+            adaptive_width: True
+            padding: dp(20)
+            spacing: dp(20)
+            ProductCard:
+                id: _pic1
+                size_hint_x: None
+                width: root.width/3.2
+                ripple_behavior: True
+                on_release:
+                    root.root.open_filechooser(self)
+
+            ProductCard:
+                id: _pic2
+                size_hint_x: None
+                width: root.width/3.2
+                ripple_behavior: True
+                on_release:
+                    root.root.open_filechooser(self)
+
+            ProductCard:
+                id: _pic3
+                size_hint_x: None
+                width: root.width/3.2
+                ripple_behavior: True
+                on_release:
+                    root.root.open_filechooser(self)
+    MDBoxLayout:
+        adaptive_height: True
+        padding: dp(10)
+        MDLabel:
+            text: "touch the widget above \nto select your product image"
+            size_hint_y: None
+            height: self.texture_size[1]
+            font_style: "Money"
+
+<MDTextField>:
+    on_focus: app.on_focus(args[1])
+
+<Fields@MDCard>:
+    size_hint_y: None
+    height: self.minimum_height
+    orientation: "vertical"
+    radius: [dp(5)]
+    padding: dp(20)
+    spacing: dp(10)
+    root: None
+    MDTextField:
+        id: name
+        hint_text: "product name:"
+        icon_right: "square-edit-outline"
+        icon_right_color: app.theme_cls.text_color
+        font_name: "assets/Eczar-Regular.ttf"
+        helper_text_mode: "on_error"
+        required: True
+
+    MDTextField:
+        id: des
+        hint_text: "product Description:"
+        icon_right: "text-subject"
+        icon_right_color: app.theme_cls.text_color
+        font_name: "assets/Eczar-Regular.ttf"
+        helper_text_mode: "on_error"
+        required: True
+
+    MDTextField:
+        id: price
+        hint_text: "product price:"
+        icon_right: "currency-ngn"
+        icon_right_color: app.theme_cls.text_color
+        font_name: "assets/Eczar-Regular.ttf"
+        helper_text_mode: "on_error"
+        input_filter: "float"
+        required: True
+
+    PhoneTextField:
+        id: phone
+        hint_text: "current phone number:"
+        icon_right: "card-account-phone-outline"
+        icon_right_color: app.theme_cls.text_color
+        font_name: "assets/Eczar-Regular.ttf"
+        input_filter: "int"
+        max_text_length: 11
+        helper_text_mode: "on_error"
+        required: True
+        on_focus: self.do_focus(args[1])
+
+    MDTextField:
+        id: email
+        hint_text: "current email:"
+        icon_right: "email"
+        icon_right_color: app.theme_cls.text_color
+        font_name: "assets/Eczar-Regular.ttf"
+        helper_text_mode: "on_error"
+        required: True
+
+    Locator:
+        id: location
+        hint_text: "current location:"
+        icon_right: "map-marker"
+        icon_right_color: app.theme_cls.text_color
+        font_name: "assets/Eczar-Regular.ttf"
+        helper_text_mode: "on_error"
+        required: True
+
+
+
+    MDRoundFlatIconButton:
+        font_name: "assets/Eczar-Regular"
+        icon: "cloud-upload"
+        text: "Upload All Information"
+        pos_hint: {"center_x": .5}
+        on_release:
+            root.root.upload_product_data(name, des, price, phone, email, location, root.root.ids.holder.children[1].ids._pic1, root.root.ids.holder.children[1].ids._pic2, root.root.ids.holder.children[1].ids._pic3)
